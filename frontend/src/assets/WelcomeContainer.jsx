@@ -10,7 +10,7 @@ export default function WelcomeContainer() {
   };
 
   return (
-    <div className="absolute z-30 top-1/6 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 md:w-3/4 lg:w-1/2 p-6 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg transition-all duration-300">
+    <div className="absolute z-30 top-1/6 left-0 right-0 mx-auto -translate-y-1/2 w-11/12 md:w-3/4 lg:w-1/2 p-6 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg transition-all duration-300">
       <div className="flex flex-col items-center space-y-4">
         {/* Header Section */}
         <div className="text-center">
