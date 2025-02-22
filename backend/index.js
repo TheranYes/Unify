@@ -5,10 +5,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-const SPOTIFY_API_URL = 'https://api.spotify.com/v1';
-
-// const sessionRouter = require('./routes/session.js');
-// app.use('/session', sessionRouter);
+const sessionRouter = require('./routes/session.js');
 const authRouter = require('./routes/auth.js');
 
 const app = express();
@@ -17,6 +14,7 @@ const PORT = process.env.SERVER_PORT || 3001;
 app.use(express.json());
 app.use(cors());
 app.use('/auth', authRouter);
+app.use('/host', sessionRouter);
 
 const dbUser = process.env.MONGODB_USER;
 const dbPassword = process.env.MONGODB_PASSWORD;

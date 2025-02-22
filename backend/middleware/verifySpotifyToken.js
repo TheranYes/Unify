@@ -25,16 +25,16 @@ async function verifySpotifyTokenMiddleware(req, res, next) {
     return res.status(400).send({ error: 'User not found' });
   }
 
-  const isTokenValid = await verifySpotifyToken(access_token);
+  const isTokenValid = await verifySpotifyToken(user.spotify_token);
   if (!isTokenValid) {
     if (Date.now() >= user.spotify_expires_in) {
       try {
-        const { access_token, refresh_token, expires_in } = await refreshSpotifyToken(user.spotify_refresh_token);
-        user.spotify_token = access_token;
+        const { spotify_token, refresh_token, expires_in } = await refreshSpotifyToken(user.spotify_refresh_token);
+        user.spotify_token = spotify_token;
         user.spotify_refresh_token = refresh_token;
         user.spotify_expires_in = Date.now() + expires_in * 1000;
         await user.save();
-        req.body.spotify_token = access_token;
+        req.body.spotify_token = spotify_token;
       } catch (error) {
         return res.status(400).send({ error: 'Failed to refresh Spotify token' });
       }

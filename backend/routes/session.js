@@ -1,66 +1,83 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const Session = require('../models/session.js');
 const User = require('../models/user.js');
+const verifySpotifyTokenMiddleware = require('../middleware/verifySpotifyToken');
 const router = express.Router();
 const SPOTIFY_API_URL = 'https://api.spotify.com/v1';
 
-router.post('/host', authMiddleware, async (req, res) => {
+router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
+    const access_token = req.header('Authorization').replace('Bearer ', '');
+    let userId;
     try {
-        const token = req.header('Authorization').replace('Bearer ', '');
-        const user = await User.findOne( { token });
+        const decoded = jwt.verify(access_token, process.env.JWT_SECRET);
+        userId = decoded.id;
+    } catch (error) {
+        return res.status(401).send('Unauthorized');
+    }
+
+    try {
+        const user = await User.findById(userId);
         if (!user) {
-            return res.status(400).json({ message: 'User not found' });
-        }
-        if (user.listeningTo !== null) {
-            return res.status(400).json({ message: 'User is already listening' });
+            return res.status(400).send({ error: 'User not found' });
         }
 
-        const userId = user.uid;
-        let session = await Session.findOne({ host: userId });
+        if (user.listening_to !== null) {
+            return res.status(400).send({ error: 'User is listening' });
+        }
+
+        const username = user.username;
+        let session = await Session.findOne({ host: user.username });
         if (session) {
-            return res.status(400).json({ message: 'User is already hosting' });
+            return res.status(400).send({ error: 'User is already hosting' });
         }
 
-        // TODO: refresh spotify token if expired
-
-        const response = await fetch('https://api.spotify.com/v1/me/player', {
+        const body = await fetch('https://api.spotify.com/v1/me/player', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${ user.spotify_token }`
             }
         });
-        if (response.status !== 200) {
+
+        if (body.status !== 200) {
             return res.status(400).json({ message: 'Cannot host' });
         }
 
-        const lastChanged = response.json().timestamp;
-        session = new Session({ host: userId, lastChanged, listeners: [] });
+        const response = await body.json();
+        const lastChanged = response.timestamp;
+        session = new Session({ host: username, lastChanged, listeners: [] });
         await session.save();
-        res.status(200);
+        return res.status(200).json({ message: 'Started hosting' });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
 });
 
-router.delete('/host', authMiddleware, async (req, res) => {
+router.delete('/', verifySpotifyTokenMiddleware, async (req, res) => {
+    const access_token = req.header('Authorization').replace('Bearer ', '');
+    let userId;
     try {
-        const token = req.header('Authorization').replace('Bearer ', '');
-        const user = await User.findOne( { token } )
+        const decoded = jwt.verify(access_token, process.env.JWT_SECRET);
+        userId = decoded.id;
+    } catch (error) {
+        return res.status(401).send('Unauthorized');
+    }
+    try {
+        const user = await User.findById(userId);
         if (!user) {
-            return res.status(400).json({ message: 'User not found' });
-        }
-        
-        const userId = user.uid;
-        const session = await Session.findOne({ host: userId });
-        if (!session) {
-            return res.status(400).json({ message: 'User is not hosting' });
+            return res.status(400).send({ error: 'User not found' });
         }
 
-        await session.deleteOne();
-        res.status(200);
+        const session = await Session.findOne({ host: user.username });
+        if (!session) {
+            return res.status(400).send({ error: 'User is not hosting' });
+        }
+
+        await Session.deleteOne( { host: user.username });
+        res.status(200).json({ message: 'Stopped hosting' });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
 });
 
-export default router;
+module.exports = router;
