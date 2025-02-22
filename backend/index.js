@@ -11,7 +11,7 @@ const SPOTIFY_API_URL = 'https://api.spotify.com/v1';
 const authRouter = require('./routes/auth.js');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.SERVER_PORT || 3001;
 
 app.use(express.json());
 
