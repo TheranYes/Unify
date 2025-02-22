@@ -7,6 +7,6 @@ const UserSchema = new mongoose.Schema({
   spotify_expires_in: { type: Number, required: true },
   last_login: { type: Date, default: Date.now },
   social_instagram: { type: String, maxLength: 200, default: null },
-});
+}, {collection: 'users'});
 
 module.exports = mongoose.model('User', UserSchema);
