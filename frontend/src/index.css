@@ -1,0 +1,9 @@
+/* 
+  Index.css will contain all the global variables.
+  Do not write page-specific or component-specific CSS here.   
+*/
+@import "tailwindcss";
+
+:root {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
