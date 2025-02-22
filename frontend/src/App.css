@@ -1,0 +1,12 @@
+html {
+  scroll-behavior: smooth;
+}
+/* Ensure footer doesn't cover scrollbar */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Smooth transitions for scaling effects */
+.user-card {
+  transition: transform 0.2s ease-in-out;
+}
