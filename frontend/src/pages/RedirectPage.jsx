@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 export default function RedirectPage() {
-    const SERVER_URL = 'http://localhost:5001';
+    const SERVER_URL = 'http://localhost:3001';
     const REDIRECT_URI = 'http://localhost:5173/callback';
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

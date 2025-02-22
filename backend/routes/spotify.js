@@ -47,4 +47,19 @@ async function getSpotifyUserId(token) {
   }
 }
 
-module.exports = { verifySpotifyToken, refreshSpotifyToken, getSpotifyUserId };
+// Get spotify user profile by id/username
+async function getSpotifyProfile(token, userId) {
+  try {
+    const response = await axios.get(`https://api.spotify.com/v1/users/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  }
+  catch (error) {
+    throw new Error('Failed to get Spotify profile');
+  }
+}
+
+module.exports = { verifySpotifyToken, refreshSpotifyToken, getSpotifyUserId, getSpotifyProfile };
