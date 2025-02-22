@@ -2,8 +2,20 @@ import { useState } from "react";
 import { AudioLines } from "lucide-react"; // Import specific icons you need
 
 export default function LoginPage() {
+  const CLIENT_ID = 'e79f3d3f007545a1a45f490cc789f63f';
+  const REDIRECT_URI = 'http://localhost:5173/callback';
+  const SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing streaming';
   const handleSpotifyLogin = () => {
-    window.location.href = "https://accounts.spotify.com/authorize";
+    const authUrl = new URL('https://accounts.spotify.com/authorize');
+    const params = {
+      response_type: 'code',
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      redirect_uri: REDIRECT_URI,
+    };
+
+    authUrl.search = new URLSearchParams(params).toString();
+    window.location.href = authUrl.toString();
   };
 
   return (
