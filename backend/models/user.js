@@ -6,7 +6,8 @@ const UserSchema = new mongoose.Schema({
   spotify_token: { type: String, required: true, unique: true},
   spotify_refresh_token: { type: String, required: true },
   spotify_expires_in: { type: Number, required: true },
-  social_instagram: { type: String, maxLength: 200 },
+  last_login: { type: Date, default: Date.now },
+  social_instagram: { type: String, maxLength: 200, default: null },
 });
 
 UserSchema.pre('save', async function (next) {
