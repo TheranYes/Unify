@@ -1,7 +1,7 @@
 // components/WelcomeContainer.jsx
 import { useState } from "react";
 
-export default function WelcomeContainer( {onDiscoverClick} ) {
+export default function WelcomeContainer({ onDiscoverClick }) {
   const [isPressed, setIsPressed] = useState(false);
 
   const handleDiscoverPress = () => {
@@ -11,7 +11,7 @@ export default function WelcomeContainer( {onDiscoverClick} ) {
   };
 
   return (
-    <div className="absolute z-30 top-1/6 left-0 right-0 mx-auto -translate-y-1/2 w-11/12 md:w-3/4 lg:w-1/2 p-6 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg transition-all duration-300">
+    <div className="relative z-30 mx-auto w-11/12 md:w-3/4 lg:w-1/2 p-6 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg transition-all duration-300 my-8">
       <div className="flex flex-col items-center space-y-4">
         {/* Header Section */}
         <div className="text-center">
