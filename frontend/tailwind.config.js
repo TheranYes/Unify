@@ -4,9 +4,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        charcoal: "#4A4A4A",
-        cream: "#FDFBD4",
-        "pastel-orange": "#F17829",
+        charcoal: "#4a4a4a",
+        cream: "#fdfbd4",
+        "pastel-orange": "f17829",
       },
     },
   },

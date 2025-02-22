@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AudioLines } from "lucide-react"; // Import specific icons you need
 
 export default function LoginPage() {
   const handleSpotifyLogin = () => {
@@ -10,11 +11,22 @@ export default function LoginPage() {
       {/* Login container */}
       <div className="relative w-full max-w-md p-8 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl z-20">
         {/* Catchphrase */}
-        <div className="mb-8 space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900 text-center dark:text-white">
-            Unify
-          </h1>
-          <p className="text-xl text-gray-700 text-center dark:text-gray-300">
+        <div className="flex flex-col items-center space-y-3">
+          {/* Icon + Header Container */}
+          <div className="flex items-center gap-4">
+            {/* Icon */}
+            <AudioLines className="w-12 h-12 bg-cream">
+              {/* Your Spotify icon SVG here */}
+            </AudioLines>
+
+            {/* Header Text */}
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+              Unify
+            </h1>
+          </div>
+
+          {/* Slogan Text */}
+          <p className="text-xl text-gray-700 dark:text-gray-300 -mt-2">
             Be Your Own Radio
           </p>
         </div>
