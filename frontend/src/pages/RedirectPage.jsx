@@ -56,7 +56,6 @@ export default function RedirectPage() {
             }
         }
         getAccessToken();
-        console.log(sessionStorage.getItem('token'));
     }, [])
 
     if (loading) return <p>Loading...</p>;
