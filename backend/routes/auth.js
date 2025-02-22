@@ -1,19 +1,19 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 require('dotenv').config();
 const verifySpotifyTokenMiddleware = require('../middleware/verifySpotifyToken');
+const { getSpotifyUserId } = require('../routes/spotify');
 
 const router = express.Router();
 
-router.post('/login', verifySpotifyTokenMiddleware, async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { access_token, refresh_token, expires_in } = req.body;
 
-    const username = getSpotifyUserId(access_token);
+    const username = await getSpotifyUserId(access_token);
 
-    const user = await User.findOne({ username });
+    let user = await User.findOne({ username });
     let newUser = false;
 
     // Make new user if not found
@@ -30,7 +30,7 @@ router.post('/login', verifySpotifyTokenMiddleware, async (req, res) => {
     user.spotify_refresh_token = refresh_token;
 
     user.spotify_expires_in = Date.now() + expires_in * 1000;
-    user.username = getSpotifyUserId(access_token);
+    user.username = username;
 
     await user.save();
 

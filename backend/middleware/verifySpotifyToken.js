@@ -1,15 +1,31 @@
 const { verifySpotifyToken, refreshSpotifyToken } = require('../routes/spotify');
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
 
 async function verifySpotifyTokenMiddleware(req, res, next) {
-  const { spotify_token, username } = req.body;
+  // Get token from request header
+  const access_token = req.header('Authorization').replace('Bearer ', '');
+  if (!access_token) {
+    return res.status(400).send({ error: 'Access token not found' });
+  }
 
-  const user = await User.findOne({ username });
+  try {
+    const decoded = jwt.verify(access_token, process.env.JWT_SECRET);
+    userId = decoded.id;
+    req.userId = userId;
+  } catch (error) {
+    res.status(401).send('Unauthorized');
+  }
+
+  const user = await User
+    .findById(userId)
+    .select('spotify_token spotify_refresh_token spotify_expires_in');
+
   if (!user) {
     return res.status(400).send({ error: 'User not found' });
   }
 
-  const isTokenValid = await verifySpotifyToken(spotify_token);
+  const isTokenValid = await verifySpotifyToken(access_token);
   if (!isTokenValid) {
     if (Date.now() >= user.spotify_expires_in) {
       try {

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, maxLength: 100 },
@@ -8,13 +7,6 @@ const UserSchema = new mongoose.Schema({
   spotify_expires_in: { type: Number, required: true },
   last_login: { type: Date, default: Date.now },
   social_instagram: { type: String, maxLength: 200, default: null },
-});
-
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified('spotify_token')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.spotify_token = await bcrypt.hash(this.spotify_token, salt);
-  next();
 });
 
 module.exports = mongoose.model('User', UserSchema);
