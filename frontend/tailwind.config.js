@@ -6,7 +6,7 @@ module.exports = {
       colors: {
         charcoal: "#4a4a4a",
         cream: "#fdfbd4",
-        "pastel-orange": "f17829",
+        "pastel-orange": "#f17829",
       },
     },
   },
