@@ -1,0 +1,45 @@
+/* Prevent horizontal scrollbars */
+html {
+  overflow-x: hidden;
+}
+
+/* Disable overscroll glow/bounce effect */
+body {
+  overscroll-behavior-x: none;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.page {
+  position: absolute; /* Required for overlapping */
+  width: 100vw; /* Full viewport width */
+  height: 100vh; /* Full viewport height */
+  top: 0;
+  left: 0;
+}
+
+.page.out {
+  animation: slideOutLeft 0.3s forwards;
+  z-index: 2; /* Ensure outgoing page stays on top */
+}
+
+.page.in {
+  animation: slideInRight 0.3s forwards;
+  z-index: 1;
+}

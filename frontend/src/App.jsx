@@ -1,25 +1,11 @@
-// src/App.js
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home.jsx";
-import LoginPage from "./pages/LoginPage.jsx";
-import RedirectPage from "./pages/RedirectPage.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
+// src/App.jsx
+import { BrowserRouter } from "react-router-dom";
+import AppWrapper from "./AppWrapper";
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Route for the home page */}
-        <Route path="/" element={<Home />} />
-
-        {/* Route for the login page */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/callback" element={<RedirectPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-      </Routes>
-    </Router>
+    <BrowserRouter>
+      <AppWrapper />
+    </BrowserRouter>
   );
 }
-
-export default App;
