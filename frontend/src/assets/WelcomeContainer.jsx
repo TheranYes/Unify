@@ -1,11 +1,12 @@
 // components/WelcomeContainer.jsx
 import { useState } from "react";
 
-export default function WelcomeContainer() {
+export default function WelcomeContainer( {onDiscoverClick} ) {
   const [isPressed, setIsPressed] = useState(false);
 
   const handleDiscoverPress = () => {
     // Add discovery logic here
+    onDiscoverClick?.();
     console.log("Discover button pressed");
   };
 
@@ -28,8 +29,8 @@ export default function WelcomeContainer() {
           onMouseDown={() => setIsPressed(true)}
           onMouseUp={() => setIsPressed(false)}
           onMouseLeave={() => setIsPressed(false)}
-          className={`px-8 py-3 bg-[#f17829] text-black rounded-full 
-            hover:bg-pastel-orange/90 transition-all duration-200
+          className={`px-8 py-3 bg-orange-700 text-white rounded-full 
+            hover:bg-orange-600/90 transition-all duration-200
             text-lg font-semibold shadow-md ${
               isPressed ? "scale-95 brightness-75" : "hover:scale-105"
             }`}
