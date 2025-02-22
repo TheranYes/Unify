@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
       console.log(`New user ${user.username} created`);
     }
     console.log(`User ${user.username} logged in`);
-
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
     res.status(201).send({ token });
   } catch (error) {
     res.status(400).send({ error: error.message });

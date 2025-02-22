@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 // const Session = require('../models/session.js');
 // const User = require('../models/user.js');
 const mongoose = require('mongoose');
@@ -11,10 +12,10 @@ const SPOTIFY_API_URL = 'https://api.spotify.com/v1';
 const authRouter = require('./routes/auth.js');
 
 const app = express();
-const PORT = 5000;
+const PORT = 5001;
 
 app.use(express.json());
-
+app.use(cors());
 app.use('/auth', authRouter);
 
 const dbUser = process.env.MONGODB_USER;

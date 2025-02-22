@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 export default function ProfilePage() {
-    const SERVER_URL = "http://google.com";
+    const SERVER_URL = "http://localhost:5001";
     async function getProfile() {
         const body = await fetch(`${SERVER_URL}/profile`, {
             method: 'GET',
