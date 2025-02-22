@@ -4,7 +4,6 @@ const Session = require('../models/session.js');
 const User = require('../models/user.js');
 const verifySpotifyTokenMiddleware = require('../middleware/verifySpotifyToken');
 const router = express.Router();
-const SPOTIFY_API_URL = 'https://api.spotify.com/v1';
 
 router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
     const access_token = req.header('Authorization').replace('Bearer ', '');
@@ -23,7 +22,12 @@ router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
         }
 
         if (user.listening_to !== null) {
-            return res.status(400).send({ error: 'User is listening' });
+            // Remove user from list of listeners
+            const session = await Session.findOne({ host: user.listening_to });
+            session.listening = session.listening.filter(listener => listener !== user.username);
+            user.listening_to = null;
+            await session.save();
+            await user.save();
         }
 
         const username = user.username;

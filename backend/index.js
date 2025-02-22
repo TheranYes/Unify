@@ -7,6 +7,7 @@ require('dotenv').config();
 
 const sessionRouter = require('./routes/session.js');
 const authRouter = require('./routes/auth.js');
+const listenRouter = require('./routes/listen.js');
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(cors());
 app.use('/auth', authRouter);
 app.use('/host', sessionRouter);
+app.use('/listen', listenRouter);
 
 const dbUser = process.env.MONGODB_USER;
 const dbPassword = process.env.MONGODB_PASSWORD;
