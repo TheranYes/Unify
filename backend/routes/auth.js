@@ -7,46 +7,41 @@ const verifySpotifyTokenMiddleware = require('../middleware/verifySpotifyToken')
 
 const router = express.Router();
 
-router.post('/register', verifySpotifyTokenMiddleware, async (req, res) => {
+router.post('/login', verifySpotifyTokenMiddleware, async (req, res) => {
   try {
     const { access_token, refresh_token, expires_in } = req.body;
 
-    const user = new User();
+    const username = getSpotifyUserId(access_token);
+
+    const user = await User.findOne({ username });
+    let newUser = false;
+
+    // Make new user if not found
+    if (!user) {
+      newUser = true;
+      user = new User({ username });
+    }
+
     // Set user last_login to current date
     user.last_login = Date.now();
 
-    // Hash the access_token and refresh_token before saving
-    const salt = await bcrypt.genSalt(10);
-    user.spotify_token = await bcrypt.hash(access_token, salt);
-    user.spotify_refresh_token = await bcrypt.hash(refresh_token, salt);
+    // security is my passion
+    user.spotify_token = access_token
+    user.spotify_refresh_token = refresh_token;
 
     user.spotify_expires_in = Date.now() + expires_in * 1000;
     user.username = getSpotifyUserId(access_token);
 
     await user.save();
-    res.status(201).send({ message: `User ${user.username} created` });
-  } catch (error) {
-    res.status(400).send({ error: error.message });
-  }
-});
-
-//TODO: rewrite this
-router.post('/login', async (req, res) => {
-  try {
-    const { username, spotify_token } = req.body;
-    const user = await User.findOne({ username });
-
-    if (!user) {
-      return res.status(400).send({ error: 'User not found' });
-    }
-
-    const isMatch = await bcrypt.compare(spotify_token, user.spotify_token);
-    if (!isMatch) {
-      return res.status(400).send({ error: 'Invalid credentials' });
-    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.send({ token });
+
+    if (newUser) {
+      console.log(`New user ${user.username} created`);
+    }
+    console.log(`User ${user.username} logged in`);
+
+    res.status(201).send({ token });
   } catch (error) {
     res.status(400).send({ error: error.message });
   }
