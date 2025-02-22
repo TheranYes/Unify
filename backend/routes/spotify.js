@@ -14,6 +14,7 @@ async function verifySpotifyToken(token) {
 }
 
 async function refreshSpotifyToken(refreshToken) {
+  console.log("trying refresh")
   try {
     const response = await axios.post('https://accounts.spotify.com/api/token', null, {
       params: {
@@ -25,8 +26,8 @@ async function refreshSpotifyToken(refreshToken) {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });
-
-    const { access_token, refresh_token, expires_in } = await response.json();
+    console.log(response.status)
+    const { access_token, refresh_token, expires_in } = await response.data;
     console.log('Refreshed Spotify token', access_token, refresh_token, expires_in);
     return { access_token, refresh_token, expires_in };
   } catch (error) {
