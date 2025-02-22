@@ -26,7 +26,7 @@ async function refreshSpotifyToken(refreshToken) {
       }
     });
 
-    const { access_token, refresh_token, expires_in } = response.data;
+    const { access_token, refresh_token, expires_in } = await response.json();
     console.log('Refreshed Spotify token', access_token, refresh_token, expires_in);
     return { access_token, refresh_token, expires_in };
   } catch (error) {

@@ -4,7 +4,7 @@ export default function RedirectPage() {
     const REDIRECT_URI = 'http://localhost:5173/callback';
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const CLIENT_ID = 'e79f3d3f007545a1a45f490cc789f63f';
+    const CLIENT_ID = '2cfff104765746ae83fe87196d938bf6';
 
     const hasToken = localStorage.getItem('token');
     useEffect(() => {
