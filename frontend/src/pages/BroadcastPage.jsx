@@ -5,50 +5,103 @@ import { Check, Ban, Loader2 } from "lucide-react";
 
 export default function BroadcastPage() {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
-  const [status, setStatus] = useState(null); // 'success', 'error', 'loading'
+  const [status, setStatus] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
+  const [spotifyWindow, setSpotifyWindow] = useState(null);
+
+  const DEVICE_REGISTRATION_DELAY = 5000; // 5 seconds
 
   const handleBroadcastAction = async () => {
+    if (isBroadcasting) {
+      // Stop broadcast
+      const response = await fetch("http://localhost:3001/host", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to stop broadcast");
+
+      setIsBroadcasting(false);
+      setStatus("success");
+      setStatusMessage("Broadcast stopped successfully");
+      return;
+    }
+
     setStatus("loading");
+    setStatusMessage("Opening Spotify and registering device...");
 
     try {
-      if (isBroadcasting) {
-        // Stop broadcast
-        const response = await fetch("http://localhost:3001/host", {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+      // Open Spotify in new tab
+      const newWindow = window.open("https://open.spotify.com", "_blank");
+      setSpotifyWindow(newWindow);
 
-        if (!response.ok) throw new Error("Failed to stop broadcast");
+      // Wait for device registration
+      await new Promise(async (resolve, reject) => {
+        setTimeout(async () => {
+          try {
+            if (newWindow.closed) {
+              throw new Error(
+                "Spotify window closed before registration completed"
+              );
+            }
 
-        setIsBroadcasting(false);
-        setStatus("success");
-        setStatusMessage("Broadcast stopped successfully");
-      } else {
-        // Start broadcast
-        const spotifyWindow = window.open("https://open.spotify.com", "_blank");
+            // Get user's location
+            const position = await new Promise((posResolve, posReject) => {
+              navigator.geolocation.getCurrentPosition(posResolve, posReject, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0,
+              });
+            });
 
-        const response = await fetch("http://localhost:3001/host", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        console.log(response.status);
-        if (!response.ok) throw new Error("Failed to start broadcast");
+            // Update location
+            setStatusMessage("Updating your location...");
+            const token = localStorage.getItem("token");
+            const locationResponse = await fetch(
+              "http://localhost:3001/location/update",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                }),
+              }
+            );
 
-        setIsBroadcasting(true);
-        setStatus("success");
-        setStatusMessage("Broadcast started successfully");
+            if (!locationResponse.ok)
+              throw new Error("Failed to update broadcast location");
 
-        // Focus on new tab if possible
-        spotifyWindow?.focus();
-      }
+            // Start broadcast
+            setStatusMessage("Finalizing broadcast setup...");
+            const hostResponse = await fetch("http://localhost:3001/host", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (!hostResponse.ok) throw new Error("Failed to start broadcast");
+
+            setIsBroadcasting(true);
+            setStatus("success");
+            setStatusMessage("Broadcast started successfully");
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        }, DEVICE_REGISTRATION_DELAY);
+      });
     } catch (error) {
       setStatus("error");
       setStatusMessage(error.message);
+      spotifyWindow?.close();
+      setIsBroadcasting(false);
     }
   };
 
@@ -68,9 +121,7 @@ export default function BroadcastPage() {
           className="w-11/12 md:w-3/4 lg:w-1/2 p-6 rounded-xl bg-white/80 dark:bg-slate-700 backdrop-blur-sm shadow-lg"
         >
           <div className="flex flex-col items-center space-y-6">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white text-center">
-              {isBroadcasting ? "Active Broadcast" : "Start Your Broadcast"}
-            </h1>
+            {/* ... existing title ... */}
 
             <motion.button
               onClick={handleBroadcastAction}
@@ -84,7 +135,10 @@ export default function BroadcastPage() {
               disabled={status === "loading"}
             >
               {status === "loading" ? (
-                <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  {isBroadcasting ? "Stopping..." : "Starting..."}
+                </div>
               ) : isBroadcasting ? (
                 "Stop Broadcast"
               ) : (
@@ -105,6 +159,12 @@ export default function BroadcastPage() {
                 )}
                 <span className="text-sm">{statusMessage}</span>
               </div>
+            )}
+
+            {status === "loading" && !isBroadcasting && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                Please keep the Spotify tab open for device registration...
+              </p>
             )}
           </div>
         </motion.div>
