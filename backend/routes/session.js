@@ -57,7 +57,9 @@ router.post("/", verifySpotifyTokenMiddleware, async (req, res) => {
 
     const response = await body.json();
     const last_changed = response.timestamp;
-    session = new Session({ host: username, last_changed, listeners: [] });
+
+    const tagline = req.body.tagline;
+    session = new Session({ host: username, last_changed, listeners: [], tagline });
     await session.save();
     return res.status(200).json({ message: "Started hosting" });
   } catch (err) {
