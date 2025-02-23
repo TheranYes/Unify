@@ -1,16 +1,18 @@
-// components/UserListContainer.jsx
 import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
-import { Check, Ban, Loader2, ArrowLeft } from "lucide-react";
+import { Check, Ban } from "lucide-react";
+import { motion } from "framer-motion";
+import { RefreshCw } from "lucide-react";
 
-const UserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
-  const SERVER_URL = "http://localhost:3001";
-  const [ users, setUsers ] = useState([]);
+const UserListContainer = forwardRef(
+  ({ isLoading, scrollRef, onRefresh }, ref) => {
+    const SERVER_URL = "http://localhost:3001";
+  const [users, setUsers] = useState([]);
   const [ listeningTo, setListeningTo ] = useState(null);
   const [status, setStatus] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
-  useImperativeHandle(ref, () => ({
-    setUsers,
-  }));
+    useImperativeHandle(ref, () => ({
+      setUsers,
+    }));
 
   useEffect(() => {
     async function fetchListeningTo() {
@@ -70,34 +72,20 @@ const UserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
     setStatusMessage("Started listening");
   }
 
-  return (
-    <div
-      ref={scrollRef}
-      className="relative z-20 w-full md:w-3/4 
+    return (
+      <div
+        ref={scrollRef}
+        className="relative z-20 w-full md:w-3/4 
            h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] 
            min-h-[800px] md:min-h-[900px]
            mx-auto rounded-xl shadow-xl"
     >
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl h-full flex flex-col">
-        <div className="border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white p-6 text-center">
+        {/* Header */}
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white p-6 text-center border-b border-gray-200 dark:border-gray-700">
           Near You
         </h2>
-        {status && (
-          <div
-            className={`text-center flex items-center justify-center ${
-              status === "success" ? "text-green-600" : "text-red-600"
-            } mb-2`}
-          >
-            {status === "success" ? (
-              <Check className="h-5 w-5" />
-            ) : (
-              <Ban className="h-5 w-5" />
-            )}
-            <span className="text-md ml-2">{statusMessage}</span>
-          </div>
-        )}
-        </div>
+
         {/* Scrollable User List */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {isLoading ? (
@@ -126,25 +114,28 @@ const UserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
                   alt={user.display_name}
                 />
 
-                {/* User Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                    {user.display_name}
-                  </h3>
-                  {user.currentSong && (
-                    <div className="flex items-center mt-1 space-x-3">
-                      {/* Album Art */}
-                      <img
-                        src={user.currentSongImg?.[1]?.url || '/default-album.png'}
-                        className="w-8 h-8 rounded-sm"
-                        alt="Current track"
-                      />
-                      <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
-                        Listening to: {user.currentSong}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                  {/* User Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                      {user.display_name}
+                    </h3>
+                    {user.currentSong && (
+                      <div className="flex items-center mt-1 space-x-3">
+                        {/* Album Art */}
+                        <img
+                          src={
+                            user.currentSongImg?.[1]?.url ||
+                            "/default-album.png"
+                          }
+                          className="w-8 h-8 rounded-sm"
+                          alt="Current track"
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
+                          Listening to: {user.currentSong}
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
                 {/* Spotify Link */}
                 <a
@@ -155,10 +146,6 @@ const UserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
                 >
                   Profile
                 </a>
-                <button 
-                onClick={() => listen(user.id)}
-                className="ml-4 px-3 py-1.5 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 transition-colors opacity-0 group-hover:opacity-100">
-                  {listeningTo === user.id ? "Stop Listening" : "Listen"} </button>
               </div>
             ))
           ) : (

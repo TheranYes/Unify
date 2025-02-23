@@ -1,14 +1,27 @@
 import { motion } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import WelcomeContainer from "../assets/WelcomeContainer";
 import UserListContainer from "../assets/UserListContainer";
 import BroadcastContainer from "../assets/BroadcastContainer";
+import OldUserListContainer from "../assets/OldUserListContainer";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 export default function Home() {
   const userListRef = useRef(null);
+  const oldUserListRef = useRef(null);
   const scrollRef = useRef(null);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false); // Add this state
+
+  // Back button handler
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login"); // Go back to login
+  };
 
   const handleDiscoverClick = async () => {
+    setIsLoading(true); // Set loading state
     try {
       // First try to get the user's location
       const position = await new Promise((resolve, reject) => {
@@ -55,11 +68,27 @@ export default function Home() {
       const users = await userList.json();
       // Set userListRef to the fetched users
       userListRef.current?.setUsers(users);
-      
+
       console.log("Fetched nearby users successfully. Count: ", users.length);
+
+      const oldUserList = await fetch("http://localhost:3001/nearby/old", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!oldUserList.ok) {
+        throw new Error("Failed to fetch old nearby users");
+      }
+
+      const oldUsers = await oldUserList.json();
+      // Set oldUserListRef to the fetched old users
+      oldUserListRef.current?.setUsers(oldUsers);
     } catch (error) {
       console.error("Error updating location:", error);
       // Handle errors (e.g., show error message to user)
+    } finally {
+      setIsLoading(false); // Clear loading state
     }
 
     // Scroll to user list regardless of location update success
@@ -77,6 +106,18 @@ export default function Home() {
       transition={{ duration: 0.3 }}
       className="min-h-screen relative"
     >
+      {/* Logout Button */}
+      <motion.button
+        onClick={handleLogout}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="absolute top-4 left-4 z-20 px-4 py-2 bg-orange-700 text-white rounded-full 
+          hover:bg-orange-600 transition-all duration-200 text-sm font-semibold 
+          shadow-md flex items-center space-x-2"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Logout</span>
+      </motion.button>
       {/* Background layers */}
       {/* Updated background layers */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-orange-100 via-gray-100 to-orange-100 dark:from-gray-100 dark:via-gray-700 dark:to-slate-800" />
@@ -85,7 +126,13 @@ export default function Home() {
         <WelcomeContainer onDiscoverClick={handleDiscoverClick} />
         <BroadcastContainer />
       </div>
-      <UserListContainer ref={userListRef} scrollRef={scrollRef} />
+      <UserListContainer
+        ref={userListRef}
+        scrollRef={scrollRef}
+        isLoading={isLoading}
+        onRefresh={handleDiscoverClick}
+      />
+      <OldUserListContainer ref={oldUserListRef} className="mt-5 pt-5"/>
     </motion.main>
   );
 }
