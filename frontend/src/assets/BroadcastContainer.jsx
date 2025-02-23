@@ -8,7 +8,6 @@ export default function BroadcastContainer() {
 
   const handleBroadcastPress = () => {
     navigate("/broadcast");
-    console.log("Starting broadcast...");
   };
 
   return (
