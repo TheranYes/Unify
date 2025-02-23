@@ -12,6 +12,7 @@ export default function Home() {
       behavior: "smooth",
       block: "start",
     });
+    
   };
 
   return (
