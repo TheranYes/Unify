@@ -91,4 +91,16 @@ router.get('/', verifyUserToken, async (req, res) => {
   }
 });
 
+router.get('/old', verifyUserToken, async (req, res) => {
+  const user = await User.findById(req.userId);
+  const oldNearbyUsers = [];
+
+  for (const nearbyUser of user.old_nearby_users) {
+    const spotifyProfile = await getSpotifyProfile(user.spotify_token, nearbyUser);
+    oldNearbyUsers.push(spotifyProfile);
+  }
+
+  res.json(oldNearbyUsers);
+});
+
 module.exports = router;
