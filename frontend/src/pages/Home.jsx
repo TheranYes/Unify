@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import WelcomeContainer from "../assets/WelcomeContainer";
 import UserListContainer from "../assets/UserListContainer";
 import BroadcastContainer from "../assets/BroadcastContainer";
@@ -12,6 +12,7 @@ export default function Home() {
   const oldUserListRef = useRef(null);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false); // Add this state
 
   // Back button handler
   const handleLogout = () => {
@@ -20,6 +21,7 @@ export default function Home() {
   };
 
   const handleDiscoverClick = async () => {
+    setIsLoading(true); // Set loading state
     try {
       // First try to get the user's location
       const position = await new Promise((resolve, reject) => {
@@ -85,6 +87,8 @@ export default function Home() {
     } catch (error) {
       console.error("Error updating location:", error);
       // Handle errors (e.g., show error message to user)
+    } finally {
+      setIsLoading(false); // Clear loading state
     }
 
     // Scroll to user list regardless of location update success
@@ -122,7 +126,12 @@ export default function Home() {
         <WelcomeContainer onDiscoverClick={handleDiscoverClick} />
         <BroadcastContainer />
       </div>
-      <UserListContainer ref={userListRef} scrollRef={scrollRef} />
+      <UserListContainer
+        ref={userListRef}
+        scrollRef={scrollRef}
+        isLoading={isLoading}
+        onRefresh={handleDiscoverClick}
+      />
       <OldUserListContainer ref={oldUserListRef} className="mt-5 pt-5"/>
     </motion.main>
   );
