@@ -3,49 +3,8 @@ const jwt = require("jsonwebtoken");
 const Session = require("../models/session.js");
 const User = require("../models/user.js");
 const verifySpotifyTokenMiddleware = require("../middleware/verifySpotifyToken");
+const { activateDevice } = require("../routes/spotify");
 const router = express.Router();
-
-async function activateDevice(user) {
-  const body = await fetch("https://api.spotify.com/v1/me/player/devices", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${user.spotify_token}`,
-    },
-  });
-
-  if (!body.ok) {
-    return { code: 500, message: "Failed to get devices" };
-  }
-
-  let device_data = await body.json();
-  if (!device_data || device_data.devices.length === 0) {
-    return { code: 404, message: "No devices found" };
-  }
-
-  let device_id = device_data.devices[0].id;
-  for (let device of device_data.devices) {
-    if (device.is_active) {
-      return { code: 200, message: "Device active" };
-    }
-  }
-
-  const body_activate = await fetch(`https://api.spotify.com/v1/me/player`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${user.spotify_token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      device_ids: [device_id],
-      play: true,
-    }),
-  });
-  if (!body_activate.ok) {
-    return { code: 500, message: "Failed to activate device" };
-  }
-
-  return { code: 200, message: "Device activated" };
-}
 
 router.post("/", verifySpotifyTokenMiddleware, async (req, res) => {
   const access_token = req.header("Authorization").replace("Bearer ", "");

@@ -1,12 +1,74 @@
 // components/UserListContainer.jsx
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
+import { Check, Ban, Loader2, ArrowLeft } from "lucide-react";
 
 const UserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
+  const SERVER_URL = "http://localhost:3001";
   const [ users, setUsers ] = useState([]);
-
+  const [ listeningTo, setListeningTo ] = useState(null);
+  const [status, setStatus] = useState(null);
+  const [statusMessage, setStatusMessage] = useState("");
   useImperativeHandle(ref, () => ({
     setUsers,
   }));
+
+  useEffect(() => {
+    async function fetchListeningTo() {
+      const body = await fetch(`${SERVER_URL}/listen`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!body.ok) {
+        throw new Error("Failed to fetch listening to");
+      }
+      const data = await body.json();
+      setListeningTo(data.listening_to);
+    }
+    fetchListeningTo();
+  }, []);
+  async function listen(userId) {
+    if (listeningTo === userId) {
+      const body = await fetch(`${SERVER_URL}/listen`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!body.ok) {
+        throw new Error("Failed to stop listening");
+      }
+      setListeningTo(null);
+      setStatus("success");
+      setStatusMessage("Stopped listening");
+      return;
+    }
+    const body = await fetch(`${SERVER_URL}/listen`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ host_username: userId }),
+    });
+    
+    if (!body.ok) {
+      if (body.status === 404) {
+        setStatus("error");
+        setStatusMessage("Please open spotify");
+        throw new Error(await body.json().message);
+      } else {
+        setStatus("error");
+        setStatusMessage("Failed to listen");
+        throw new Error(await body.json().message);
+      }
+      return;
+    }
+    setListeningTo(userId);
+    setStatus("success");
+    setStatusMessage("Started listening");
+  }
 
   return (
     <div
@@ -17,11 +79,25 @@ const UserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
            mx-auto rounded-xl shadow-xl"
     >
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl h-full flex flex-col">
-        {/* Header */}
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white p-6 text-center border-b border-gray-200 dark:border-gray-700">
+        <div className="border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white p-6 text-center">
           Near You
         </h2>
-
+        {status && (
+          <div
+            className={`text-center flex items-center justify-center ${
+              status === "success" ? "text-green-600" : "text-red-600"
+            } mb-2`}
+          >
+            {status === "success" ? (
+              <Check className="h-5 w-5" />
+            ) : (
+              <Ban className="h-5 w-5" />
+            )}
+            <span className="text-md ml-2">{statusMessage}</span>
+          </div>
+        )}
+        </div>
         {/* Scrollable User List */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {isLoading ? (
@@ -79,6 +155,10 @@ const UserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
                 >
                   Profile
                 </a>
+                <button 
+                onClick={() => listen(user.id)}
+                className="ml-4 px-3 py-1.5 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 transition-colors opacity-0 group-hover:opacity-100">
+                  {listeningTo === user.id ? "Stop Listening" : "Listen"} </button>
               </div>
             ))
           ) : (

@@ -28,7 +28,6 @@ export default function BroadcastPage() {
 
     fetchData();
   }, []);
-  const DEVICE_REGISTRATION_DELAY = 5000;
 
   // Back button handler
   const handleGoBack = () => {
@@ -112,7 +111,6 @@ export default function BroadcastPage() {
     } catch (error) {
       setStatus("error");
       setStatusMessage(error.message);
-      spotifyWindow?.close();
       setIsBroadcasting(false);
     }
   };

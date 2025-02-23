@@ -27,7 +27,7 @@ async function verifyUserToken(req, res, next) {
     return res.status(400).send({ error: 'User not found' });
   }
 
-  console.log('User found:', user);
+  // console.log('User found:', user);
 
   const isTokenValid = await verifySpotifyToken(user.spotify_token);
   console.log('isTokenValid', isTokenValid);
