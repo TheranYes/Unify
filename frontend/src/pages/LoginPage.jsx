@@ -40,7 +40,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full h-screen flex items-center justify-center p-4 bg-gradient-to-br from-cream via-gray-100 to-cream dark:from-charcoal dark:via-gray-800 dark:to-charcoal">
+    <div className="w-full h-screen flex items-center justify-center p-4 bg-gradient-to-br from-orange-100 via-gray-100 to-white dark:from-slate-800 dark:via-gray-400 dark:to-slate-800">
       {/* Login container */}
       <div className="relative w-full max-w-md p-8 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl z-20">
         {/* Catchphrase */}
