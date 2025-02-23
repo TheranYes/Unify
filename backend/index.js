@@ -36,7 +36,7 @@ mongoose.connect(uri, clientOptions).then(
 );
 
 function logger(req, res, next) {
-  console.log(`Called: ${req.orginalUrl}`);
+  console.log(`Called: ${req.originalUrl}`);
   next();
 }
 
