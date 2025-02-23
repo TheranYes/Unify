@@ -17,6 +17,7 @@ const UserSchema = new mongoose.Schema({
   listening_to: { type: String, maxLength: 100, default: null },
   nearby_users: { type: [String], default: [] },
   old_nearby_users: { type: [String], default: [] },
+  tagline: { type: String, required: false, maxLength: 100 }
 }, {collection: 'users'});
 
 module.exports = mongoose.model('User', UserSchema);

@@ -31,9 +31,11 @@ router.post("/", verifySpotifyTokenMiddleware, async (req, res) => {
       );
       user.listening_to = null;
       await session.save();
-      await user.save();
     }
 
+    const { tagline } = req.body;
+    if (tagline) user.tagline = tagline;
+    await user.save();
     const username = user.username;
     let session = await Session.findOne({ host: user.username });
     if (session) {
@@ -58,8 +60,7 @@ router.post("/", verifySpotifyTokenMiddleware, async (req, res) => {
     const response = await body.json();
     const last_changed = response.timestamp;
 
-    const tagline = req.body.tagline;
-    session = new Session({ host: username, last_changed, listeners: [], tagline });
+    session = new Session({ host: username, last_changed, listeners: [] });
     await session.save();
     return res.status(200).json({ message: "Started hosting" });
   } catch (err) {

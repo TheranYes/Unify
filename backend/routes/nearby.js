@@ -67,7 +67,7 @@ router.get('/', verifyUserToken, async (req, res) => {
           const curSong = await getCurrentTrack(hostUser.spotify_token);
           spotifyProfile.currentSong = curSong.name;
           spotifyProfile.currentSongImg = curSong.images;
-          spotifyProfile.tagline = session.tagline;
+          spotifyProfile.tagline = hostUser.tagline;
           const listeners = [];
           for (const listener of session.listening) {
             const listenerUser = await getSpotifyProfile(user.spotify_token, listener);
@@ -105,6 +105,7 @@ router.get('/old', verifyUserToken, async (req, res) => {
     // const lastSong = await getLastPlayed(nearbyUser.spotify_token);
     // spotifyProfile.lastSong = lastSong.name;
     // spotifyProfile.lastSongImg = lastSong.images;
+    spotifyProfile.tagline = user.tagline;
     oldNearbyUsers.push(spotifyProfile);
   }
 
