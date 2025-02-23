@@ -42,7 +42,7 @@ async function pingSession(session) {
   const host = await User.findOne({ username: session.host });
   const isValidToken = await verifySpotifyToken(host.spotify_token);
   if (!isValidToken) {
-    const { access_token, refresh_token, expires_in } = await refreshSpotifyToken(user.spotify_refresh_token);
+    const { access_token, refresh_token, expires_in } = await refreshSpotifyToken(host.spotify_refresh_token);
     host.spotify_token = access_token;
     host.spotify_refresh_token = refresh_token;
     host.spotify_expires_in = Date.now() + expires_in * 1000;

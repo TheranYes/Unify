@@ -52,6 +52,14 @@ router.get('/', verifyUserToken, async (req, res) => {
           const curSong = await getCurrentTrack(hostUser.spotify_token);
           spotifyProfile.currentSong = curSong.name;
           spotifyProfile.currentSongImg = curSong.images;
+
+          const listeners = [];
+          for (const listener of session.listening) {
+            const listenerUser = await getSpotifyProfile(user.spotify_token, listener);
+            listeners.push(listenerUser);
+          }
+
+          spotifyProfile.listeners = listeners;
           hosts.push(spotifyProfile);
         }
       }
