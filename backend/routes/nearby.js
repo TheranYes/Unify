@@ -2,7 +2,7 @@ const express = require('express');
 const verifyUserToken = require('../middleware/verifyUserToken');
 const Session = require('../models/session');
 const User = require('../models/user');
-const { getSpotifyProfile, getCurrentTrack } = require('./spotify');
+const { getSpotifyProfile, getCurrentTrack, getLastPlayed } = require('./spotify');
 
 const router = express.Router();
 
@@ -95,8 +95,18 @@ router.get('/old', verifyUserToken, async (req, res) => {
   const user = await User.findById(req.userId);
   const oldNearbyUsers = [];
 
-  for (const nearbyUser of user.old_nearby_users) {
-    const spotifyProfile = await getSpotifyProfile(user.spotify_token, nearbyUser);
+  for (const nearbyUserId of user.old_nearby_users) {
+    // const nearbyUser = await User.findOne({ username: nearbyUserId });
+    // if (!nearbyUser) {
+    //  continue;
+    // }
+
+    // console.log('Nearby user', nearbyUser.spotify_token);
+
+    const spotifyProfile = await getSpotifyProfile(user.spotify_token, nearbyUserId);
+    // const lastSong = await getLastPlayed(nearbyUser.spotify_token);
+    // spotifyProfile.lastSong = lastSong.name;
+    // spotifyProfile.lastSongImg = lastSong.images;
     oldNearbyUsers.push(spotifyProfile);
   }
 
