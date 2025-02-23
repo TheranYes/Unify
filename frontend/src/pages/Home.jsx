@@ -120,8 +120,8 @@ export default function Home() {
       </motion.button>
       {/* Background layers */}
       {/* Updated background layers */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-orange-100 via-gray-100 to-orange-100 dark:from-gray-100 dark:via-gray-700 dark:to-slate-800" />
-      <div className="absolute inset-0 z-0 bg-gradient-to-tr from-orange-100/50 to-gray-800/50 dark:from-orange-100/50 dark:to-slate-800" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-orange-100/50 via-orange-400 to-orange-100 dark:from-gray-100 dark:via-gray-700 dark:to-slate-800" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-tr from-orange-100/50 to-white-800/50 dark:from-grey-200/50 dark:to-slate-800" />
       <div className="flex flex-col items-center pt-8 pb-8">
         <WelcomeContainer onDiscoverClick={handleDiscoverClick} />
         <BroadcastContainer />
@@ -132,7 +132,7 @@ export default function Home() {
         isLoading={isLoading}
         onRefresh={handleDiscoverClick}
       />
-      <OldUserListContainer ref={oldUserListRef} className="mt-5 pt-5"/>
+      <OldUserListContainer ref={oldUserListRef} className="mt-5 pt-5" />
     </motion.main>
   );
 }
