@@ -42,8 +42,6 @@ router.get('/', verifyUserToken, async (req, res) => {
 
     // Clear nearby_users
     user.nearby_users = [];
-
-    console.log('Old nearby users', user.old_nearby_users);
     const hosts = [];
 
     for (const session of sessions) {
