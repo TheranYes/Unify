@@ -6,7 +6,7 @@ const { getSpotifyProfile, getCurrentTrack, getLastPlayed } = require('./spotify
 
 const router = express.Router();
 
-const RADIUS_MILES = 5;
+const RADIUS_MILES = 2000;
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 3963; // Radius of the Earth in miles
@@ -106,7 +106,8 @@ router.get('/old', verifyUserToken, async (req, res) => {
     // const lastSong = await getLastPlayed(nearbyUser.spotify_token);
     // spotifyProfile.lastSong = lastSong.name;
     // spotifyProfile.lastSongImg = lastSong.images;
-    spotifyProfile.tagline = user.tagline;
+    const nearbyUser = await User.findOne({ username: nearbyUserId.username });
+    spotifyProfile.tagline = nearbyUser.tagline;
     spotifyProfile.lastNearby = nearbyUserId.timestamp;
     oldNearbyUsers.push(spotifyProfile);
   }
