@@ -3,10 +3,19 @@ import { useRef } from "react";
 import WelcomeContainer from "../assets/WelcomeContainer";
 import UserListContainer from "../assets/UserListContainer";
 import BroadcastContainer from "../assets/BroadcastContainer";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 export default function Home() {
   const userListRef = useRef(null);
   const scrollRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Back button handler
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login"); // Go back to login
+  };
 
   const handleDiscoverClick = async () => {
     try {
@@ -55,7 +64,7 @@ export default function Home() {
       const users = await userList.json();
       // Set userListRef to the fetched users
       userListRef.current?.setUsers(users);
-      
+
       console.log("Fetched nearby users successfully. Count: ", users.length);
     } catch (error) {
       console.error("Error updating location:", error);
@@ -77,6 +86,18 @@ export default function Home() {
       transition={{ duration: 0.3 }}
       className="min-h-screen relative"
     >
+      {/* Logout Button */}
+      <motion.button
+        onClick={handleLogout}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="absolute top-4 left-4 z-20 px-4 py-2 bg-orange-700 text-white rounded-full 
+          hover:bg-orange-600 transition-all duration-200 text-sm font-semibold 
+          shadow-md flex items-center space-x-2"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Logout</span>
+      </motion.button>
       {/* Background layers */}
       {/* Updated background layers */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-orange-100 via-gray-100 to-orange-100 dark:from-gray-100 dark:via-gray-700 dark:to-slate-800" />
