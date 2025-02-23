@@ -76,6 +76,9 @@ const OldUserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
                       ? `Passed by ${timeAgo(user.lastNearby)} ago`
                       : ""}
                   </h3>
+                  <span className="text-gray-800 dark:text-white text-base overflow-x-scroll italic">
+                    "{user.tagline}"
+                  </span>
                 </div>
 
                 {/* Spotify Link */}
