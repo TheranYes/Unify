@@ -15,6 +15,8 @@ const UserSchema = new mongoose.Schema({
   locations: { type: [GeoLocationSchema], default: [] },
   social_instagram: { type: String, maxLength: 200, default: null },
   listening_to: { type: String, maxLength: 100, default: null },
+  nearby_users: { type: [String], default: [] },
+  old_nearby_users: { type: [String], default: [] },
 }, {collection: 'users'});
 
 module.exports = mongoose.model('User', UserSchema);

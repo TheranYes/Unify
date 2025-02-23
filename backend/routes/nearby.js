@@ -2,15 +2,11 @@ const express = require('express');
 const verifyUserToken = require('../middleware/verifyUserToken');
 const Session = require('../models/session');
 const User = require('../models/user');
-const { getSpotifyProfile, getCurrentTrack } = require('./spotify');
+const { getSpotifyProfile, getCurrentTrack, getLastPlayed } = require('./spotify');
 
 const router = express.Router();
 
 const RADIUS_MILES = 5;
-
-const milesToRadians = (mi) => {
-    return mi / 3963;
-}
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 3963; // Radius of the Earth in miles
@@ -34,10 +30,18 @@ router.get('/', verifyUserToken, async (req, res) => {
 
   console.log('User location', lat, long);
 
-  const radius = milesToRadians(RADIUS_MILES);
-
   try {
     const sessions = await Session.find({});
+
+    // Add previous nearby users to old_nearby_users (remove duplicates)
+    for (const nearby_user of user.nearby_users) {
+      if (!user.old_nearby_users.includes(nearby_user)) {
+        user.old_nearby_users.push(nearby_user);
+      }
+    }
+
+    // Clear nearby_users
+    user.nearby_users = [];
     const hosts = [];
 
     for (const session of sessions) {
@@ -48,6 +52,17 @@ router.get('/', verifyUserToken, async (req, res) => {
         const distance = calculateDistance(lat, long, hostLat, hostLong);
 
         if (distance <= RADIUS_MILES) {
+          // Remove session.host from old_nearby_users
+          const index = user.old_nearby_users.indexOf(session.host);
+          if (index > -1) {
+            user.old_nearby_users.splice(index, 1);
+          }
+
+          // Add session.host to nearby_users
+          if (!user.nearby_users.includes(session.host)) {
+            user.nearby_users.push(session.host);
+          }
+
           const spotifyProfile = await getSpotifyProfile(user.spotify_token, session.host);
           const curSong = await getCurrentTrack(hostUser.spotify_token);
           spotifyProfile.currentSong = curSong.name;
@@ -65,11 +80,35 @@ router.get('/', verifyUserToken, async (req, res) => {
       }
     }
 
+    await user.save();
+
     res.json(hosts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
+});
+
+router.get('/old', verifyUserToken, async (req, res) => {
+  const user = await User.findById(req.userId);
+  const oldNearbyUsers = [];
+
+  for (const nearbyUserId of user.old_nearby_users) {
+    // const nearbyUser = await User.findOne({ username: nearbyUserId });
+    // if (!nearbyUser) {
+    //  continue;
+    // }
+
+    // console.log('Nearby user', nearbyUser.spotify_token);
+
+    const spotifyProfile = await getSpotifyProfile(user.spotify_token, nearbyUserId);
+    // const lastSong = await getLastPlayed(nearbyUser.spotify_token);
+    // spotifyProfile.lastSong = lastSong.name;
+    // spotifyProfile.lastSongImg = lastSong.images;
+    oldNearbyUsers.push(spotifyProfile);
+  }
+
+  res.json(oldNearbyUsers);
 });
 
 module.exports = router;

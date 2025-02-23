@@ -85,4 +85,27 @@ async function getCurrentTrack(token) {
   }
 }
 
-module.exports = { verifySpotifyToken, refreshSpotifyToken, getSpotifyUserId, getSpotifyProfile, getCurrentTrack };
+async function getLastPlayed(token) {
+  try {
+    const response = await axios.get('https://api.spotify.com/v1/me/player/recently-played', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    console.log('Reponse data', response.data);
+
+    if (!response.data.items) {
+      return { images: [], name: 'No track played' };
+    }
+
+    const images = response.data.items[0].track.album.images;
+    const name = response.data.items[0].track.name;
+
+    return { images, name };
+  } catch (error) {
+    throw new Error('Failed to get last played track');
+  }
+}
+
+module.exports = { verifySpotifyToken, refreshSpotifyToken, getSpotifyUserId, getSpotifyProfile, getCurrentTrack, getLastPlayed };
