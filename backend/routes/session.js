@@ -64,6 +64,7 @@ router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
         if (user.listening_to !== null) {
             // Remove user from list of listeners
             const session = await Session.findOne({ host: user.listening_to });
+            console.log(user.username)
             session.listening = session.listening.filter(listener => listener !== user.username);
             user.listening_to = null;
             await session.save();
@@ -90,8 +91,8 @@ router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
         }
 
         const response = await body.json();
-        const lastChanged = response.timestamp;
-        session = new Session({ host: username, lastChanged, listeners: [] });
+        const last_changed = response.timestamp;
+        session = new Session({ host: username, last_changed, listeners: [] });
         await session.save();
         return res.status(200).json({ message: 'Started hosting' });
     } catch (err) {
