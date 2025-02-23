@@ -3,9 +3,11 @@ import { useRef } from "react";
 import WelcomeContainer from "../assets/WelcomeContainer";
 import UserListContainer from "../assets/UserListContainer";
 import BroadcastContainer from "../assets/BroadcastContainer";
+import OldUserListContainer from "../assets/OldUserListContainer";
 
 export default function Home() {
   const userListRef = useRef(null);
+  const oldUserListRef = useRef(null);
   const scrollRef = useRef(null);
 
   const handleDiscoverClick = async () => {
@@ -57,6 +59,20 @@ export default function Home() {
       userListRef.current?.setUsers(users);
       
       console.log("Fetched nearby users successfully. Count: ", users.length);
+
+      const oldUserList = await fetch("http://localhost:3001/nearby/old", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!oldUserList.ok) {
+        throw new Error("Failed to fetch old nearby users");
+      }
+
+      const oldUsers = await oldUserList.json();
+      // Set oldUserListRef to the fetched old users
+      oldUserListRef.current?.setUsers(oldUsers);
     } catch (error) {
       console.error("Error updating location:", error);
       // Handle errors (e.g., show error message to user)
@@ -86,6 +102,7 @@ export default function Home() {
         <BroadcastContainer />
       </div>
       <UserListContainer ref={userListRef} scrollRef={scrollRef} />
+      <OldUserListContainer ref={oldUserListRef} className="mt-5 pt-5"/>
     </motion.main>
   );
 }
