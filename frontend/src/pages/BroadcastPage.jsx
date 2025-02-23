@@ -38,7 +38,7 @@ export default function BroadcastPage() {
       setSpotifyWindow(newWindow);
 
       // Wait for device registration
-      await new Promise((resolve, reject) => {
+      await new Promise(async (resolve, reject) => {
         setTimeout(async () => {
           try {
             if (newWindow.closed) {
@@ -47,16 +47,46 @@ export default function BroadcastPage() {
               );
             }
 
-            setStatusMessage("Finalizing broadcast setup...");
+            // Get user's location
+            const position = await new Promise((posResolve, posReject) => {
+              navigator.geolocation.getCurrentPosition(posResolve, posReject, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0,
+              });
+            });
 
-            const response = await fetch("http://localhost:3001/host", {
+            // Update location
+            setStatusMessage("Updating your location...");
+            const token = localStorage.getItem("token");
+            const locationResponse = await fetch(
+              "http://localhost:3001/location/update",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                }),
+              }
+            );
+
+            if (!locationResponse.ok)
+              throw new Error("Failed to update broadcast location");
+
+            // Start broadcast
+            setStatusMessage("Finalizing broadcast setup...");
+            const hostResponse = await fetch("http://localhost:3001/host", {
               method: "POST",
               headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                Authorization: `Bearer ${token}`,
               },
             });
 
-            if (!response.ok) throw new Error("Failed to start broadcast");
+            if (!hostResponse.ok) throw new Error("Failed to start broadcast");
 
             setIsBroadcasting(true);
             setStatus("success");
