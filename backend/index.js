@@ -88,17 +88,16 @@ async function pingSession(session) {
         throw new Error('Failed to sync to session');
       }
     
+
       // pause if not playing
       if (!playbackState.is_playing) {
+        await (() => new Promise(resolve => setTimeout(resolve, 2000)))();
         const body_pause = await fetch("https://api.spotify.com/v1/me/player/pause", {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${listenerUser.spotify_token}`,
           }
         });
-        
-        console.log(body_pause.status)
-        console.log("paused?")
       }
     }
     session.last_changed = playbackState.timestamp;
@@ -106,10 +105,19 @@ async function pingSession(session) {
   }
 }
 
+let isPinging = false;
 setInterval(async () => {
-  const sessions = await Session.find();
-  for (let session of sessions) {
-    await pingSession(session);
+  if (isPinging) return;
+  isPinging = true;
+  try {
+    const sessions = await Session.find();
+    for (let session of sessions) {
+      await pingSession(session);
+    }
+  } catch (error) {
+    console.error(`Error during session ping: ${error.message}`);
+  } finally {
+    isPinging = false;
   }
 }, 1000);
 
