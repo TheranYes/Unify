@@ -35,7 +35,8 @@ router.get('/', verifyUserToken, async (req, res) => {
 
     // Add previous nearby users to old_nearby_users (remove duplicates)
     for (const nearby_user of user.nearby_users) {
-      if (!user.old_nearby_users.includes(nearby_user)) {
+      const nearbyUserId = nearby_user.username;
+      if (!user.old_nearby_users.some(user => user.username === nearbyUserId)) {
         user.old_nearby_users.push(nearby_user);
       }
     }
@@ -53,14 +54,14 @@ router.get('/', verifyUserToken, async (req, res) => {
 
         if (distance <= RADIUS_MILES) {
           // Remove session.host from old_nearby_users
-          const index = user.old_nearby_users.indexOf(session.host);
+          const index = user.old_nearby_users.findIndex(user => user.username === session.host);
           if (index > -1) {
             user.old_nearby_users.splice(index, 1);
           }
 
           // Add session.host to nearby_users
-          if (!user.nearby_users.includes(session.host)) {
-            user.nearby_users.push(session.host);
+          if (!user.nearby_users.some(user => user.username === session.host)) {
+            user.nearby_users.push({ username: session.host });
           }
 
           const spotifyProfile = await getSpotifyProfile(user.spotify_token, session.host);
@@ -101,10 +102,11 @@ router.get('/old', verifyUserToken, async (req, res) => {
 
     // console.log('Nearby user', nearbyUser.spotify_token);
 
-    const spotifyProfile = await getSpotifyProfile(user.spotify_token, nearbyUserId);
+    const spotifyProfile = await getSpotifyProfile(user.spotify_token, nearbyUserId.username);
     // const lastSong = await getLastPlayed(nearbyUser.spotify_token);
     // spotifyProfile.lastSong = lastSong.name;
     // spotifyProfile.lastSongImg = lastSong.images;
+    spotifyProfile.lastNearby = nearbyUserId.timestamp;
     oldNearbyUsers.push(spotifyProfile);
   }
 
