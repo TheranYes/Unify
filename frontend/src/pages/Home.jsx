@@ -7,12 +7,49 @@ import BroadcastContainer from "../assets/BroadcastContainer";
 export default function Home() {
   const userListRef = useRef(null);
 
-  const handleDiscoverClick = () => {
+  const handleDiscoverClick = async () => {
+    try {
+      // First try to get the user's location
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        });
+      });
+
+      // Get the JWT token from storage
+      const token = localStorage.getItem("token");
+
+      // Send to backend server at localhost:3001
+      const response = await fetch("http://localhost:3001/location/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update location");
+      }
+
+      // Log success (you can add a toast notification here)
+      console.log("Location updated successfully");
+    } catch (error) {
+      console.error("Error updating location:", error);
+      // Handle errors (e.g., show error message to user)
+    }
+
+    // Scroll to user list regardless of location update success
     userListRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
-    
   };
 
   return (
