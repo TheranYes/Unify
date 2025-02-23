@@ -161,6 +161,9 @@ const UserListContainer = forwardRef(
                         <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
                           Listening to: {user.currentSong}
                         </span>
+                        <span className="text-gray-800 dark:text-white text-base overflow-x-scroll">
+                          "{user.tagline}"
+                        </span>
                       </div>
                     )}
                   </div>

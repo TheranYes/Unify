@@ -18,7 +18,7 @@ const timeAgo = (timestamp) => {
 };
 
 const OldUserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
-  const [ users, setUsers ] = useState([]);
+  const [users, setUsers] = useState([]);
 
   useImperativeHandle(ref, () => ({
     setUsers,
@@ -61,7 +61,7 @@ const OldUserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
               >
                 {/* Profile Image */}
                 <img
-                  src={user.images?.[1]?.url || '/default-avatar.png'}
+                  src={user.images?.[1]?.url || "/default-avatar.png"}
                   className="w-16 h-16 rounded-full object-cover mr-4"
                   alt={user.display_name}
                 />
@@ -72,9 +72,9 @@ const OldUserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
                     {user.display_name}
                   </h3>
                   <h3 className="text-gray-500">
-                    {
-                      user.lastNearby ? `Passed by ${timeAgo(user.lastNearby)} ago` : ''
-                    }
+                    {user.lastNearby
+                      ? `Passed by ${timeAgo(user.lastNearby)} ago`
+                      : ""}
                   </h3>
                 </div>
 

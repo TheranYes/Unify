@@ -9,6 +9,7 @@ export default function BroadcastPage() {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [status, setStatus] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
+  const [tagline, setTagline] = useState(""); // Add tagline state
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,7 +34,6 @@ export default function BroadcastPage() {
   const handleGoBack = () => {
     navigate(-1); // Go back to previous page
   };
-
   const handleBroadcastAction = async () => {
     if (isBroadcasting) {
       // Stop broadcast
@@ -60,9 +60,9 @@ export default function BroadcastPage() {
       try {
         position = await new Promise((posResolve, posReject) => {
           navigator.geolocation.getCurrentPosition(posResolve, posReject, {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0,
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0,
           });
         });
       } catch (error) {
@@ -95,8 +95,13 @@ export default function BroadcastPage() {
       const hostResponse = await fetch("http://localhost:3001/host", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json", // Add content-type
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({
+          tagline, // Add tagline to request body
+          // Include any other required fields
+        }),
       });
 
       if (hostResponse.status == 404) {
@@ -108,6 +113,7 @@ export default function BroadcastPage() {
       setIsBroadcasting(true);
       setStatus("success");
       setStatusMessage("Broadcast started successfully");
+      setTagline("");
     } catch (error) {
       setStatus("error");
       setStatusMessage(error.message);
@@ -145,6 +151,20 @@ export default function BroadcastPage() {
         >
           <div className="flex flex-col items-center space-y-6">
             {/* ... existing title ... */}
+
+            {/* Add Tagline Textbox */}
+            <textarea
+              value={tagline}
+              onChange={(e) => setTagline(e.target.value)}
+              placeholder="Enter your message / socials"
+              className="w-full px-4 py-2 border-2 border-orange-600 rounded-lg 
+                       bg-white/90 dark:bg-slate-600/80 placeholder-gray-400 dark:placeholder-gray-500
+                       focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white
+                       resize-none transition-all duration-200"
+              rows={3}
+              maxLength={100}
+              disabled={isBroadcasting}
+            />
 
             <motion.button
               onClick={handleBroadcastAction}
