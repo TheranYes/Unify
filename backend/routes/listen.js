@@ -45,6 +45,50 @@ async function activateDevice(user) {
   }
 }
 
+async function syncToSession(user, session) {
+  const host = await User.findOne({ username: session.host });
+  const body = await fetch("https://api.spotify.com/v1/me/player", {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${host.spotify_token}`
+      }
+  });
+
+  if (body.status !== 200) {
+    throw new Error('Could not sync to session');
+  }
+
+  const playbackState = await body.json();
+  console.log(playbackState.item.uri)
+  const body_start = await fetch("https://api.spotify.com/v1/me/player/play", {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${user.spotify_token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      uris: [playbackState.item.uri],
+      position_ms: playbackState.progress_ms
+    })
+  });
+  console.log(body_start.status)
+  if (!body_start.ok) {
+    throw new Error('Failed to sync to session');
+  }
+
+  if (!playbackState.is_playing) {
+    const body_pause = await fetch("https://api.spotify.com/v1/me/player/pause", {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${user.spotify_token}`
+      }
+    });
+    
+    if (body_pause.status !== 204) {
+      throw new Error('Failed to pause session');
+    }
+  }
+}
 router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
   const access_token = req.header('Authorization').replace('Bearer ', '');
   let userId;
@@ -86,13 +130,14 @@ router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
     await user.save();
 
     await activateDevice(user);
+    await syncToSession(user, session);
     return res.status(200).json({ message: 'Started listening' });
   } catch (err) {
       return res.status(500).json({ message: err.message });
   }
 });
   
-router.delete('/listen', verifySpotifyTokenMiddleware, async (req, res) => {
+router.delete('/', verifySpotifyTokenMiddleware, async (req, res) => {
   const access_token = req.header('Authorization').replace('Bearer ', '');
   let userId;
   try {

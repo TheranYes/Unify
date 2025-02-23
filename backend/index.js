@@ -1,8 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-// const Session = require('../models/session.js');
-// const User = require('../models/user.js');
+const Session = require('./models/session.js');
+const User = require('./models/user.js');
 const mongoose = require('mongoose');
+const {verifySpotifyToken, refreshSpotifyToken } = require('./routes/spotify.js');
 require('dotenv').config();
 
 const sessionRouter = require('./routes/session.js');
@@ -34,6 +35,81 @@ mongoose.connect(uri, clientOptions).then(
   () => { console.log('Database connection established'); },
   err => { console.error(`Database connection error: ${err.message}`); }
 );
+
+async function pingSession(session) {
+  const host = await User.findOne({ username: session.host });
+  const isValidToken = await verifySpotifyToken(host.spotify_token);
+  if (!isValidToken) {
+    const { access_token, refresh_token, expires_in } = await refreshSpotifyToken(user.spotify_refresh_token);
+    host.spotify_token = access_token;
+    host.spotify_refresh_token = refresh_token;
+    host.spotify_expires_in = Date.now() + expires_in * 1000;
+    await host.save();
+  }
+  const body_host = await fetch("https://api.spotify.com/v1/me/player", {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${host.spotify_token}`
+    }
+  });
+
+  if (body_host.status !== 200) {
+    for (let listener of session.listening) {
+      const listenerUser = await User.findOne({ username: listener });
+      listenerUser.listening_to = null;
+      await listenerUser.save();
+    }
+    await Session.deleteOne({ host: session.host });
+    return;
+  }
+
+  if (!session.listening || session.listening.length === 0) {
+    return;
+  }
+  const playbackState = await body_host.json(); 
+  if (playbackState.timestamp !== session.last_changed) {
+    console.log("update listeners")
+    for (let listener of session.listening) {
+      // start listening to same song
+      const listenerUser = await User.findOne({ username: listener });
+      const body_listener = await fetch("https://api.spotify.com/v1/me/player/play", {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${listenerUser.spotify_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        uris: [playbackState.item.uri],
+        position_ms: playbackState.progress_ms
+      })});
+      if (body_listener.status !== 204) {
+        throw new Error('Failed to sync to session');
+      }
+    
+      // pause if not playing
+      if (!playbackState.is_playing) {
+        const body_pause = await fetch("https://api.spotify.com/v1/me/player/pause", {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${listenerUser.spotify_token}`,
+          }
+        });
+        
+        console.log(body_pause.status)
+        console.log("paused?")
+      }
+    }
+    session.last_changed = playbackState.timestamp;
+    await session.save();
+  }
+}
+
+setInterval(async () => {
+  const sessions = await Session.find();
+  for (let session of sessions) {
+    await pingSession(session);
+  }
+}, 1000);
 
 function logger(req, res, next) {
   console.log(`Called: ${req.orginalUrl}`);
