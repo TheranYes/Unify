@@ -6,70 +6,70 @@ import { Check, Ban } from "lucide-react";
 const UserListContainer = forwardRef(
   ({ isLoading, scrollRef, onRefresh }, ref) => {
     const SERVER_URL = "http://localhost:3001";
-  const [users, setUsers] = useState([]);
-  const [ listeningTo, setListeningTo ] = useState(null);
-  const [status, setStatus] = useState(null);
-  const [statusMessage, setStatusMessage] = useState("");
+    const [users, setUsers] = useState([]);
+    const [listeningTo, setListeningTo] = useState(null);
+    const [status, setStatus] = useState(null);
+    const [statusMessage, setStatusMessage] = useState("");
     useImperativeHandle(ref, () => ({
       setUsers,
     }));
 
-  useEffect(() => {
-    async function fetchListeningTo() {
+    useEffect(() => {
+      async function fetchListeningTo() {
+        const body = await fetch(`${SERVER_URL}/listen`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!body.ok) {
+          throw new Error("Failed to fetch listening to");
+        }
+        const data = await body.json();
+        setListeningTo(data.listening_to);
+      }
+      fetchListeningTo();
+    }, []);
+    async function listen(userId) {
+      if (listeningTo === userId) {
+        const body = await fetch(`${SERVER_URL}/listen`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!body.ok) {
+          throw new Error("Failed to stop listening");
+        }
+        setListeningTo(null);
+        setStatus("success");
+        setStatusMessage("Stopped listening");
+        return;
+      }
       const body = await fetch(`${SERVER_URL}/listen`, {
-        method: "GET",
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        body: JSON.stringify({ host_username: userId }),
       });
+
       if (!body.ok) {
-        throw new Error("Failed to fetch listening to");
+        if (body.status === 404) {
+          setStatus("error");
+          setStatusMessage("Please open spotify");
+          throw new Error(await body.json().message);
+        } else {
+          setStatus("error");
+          setStatusMessage("Failed to listen");
+          throw new Error(await body.json().message);
+        }
       }
-      const data = await body.json();
-      setListeningTo(data.listening_to);
-    }
-    fetchListeningTo();
-  }, []);
-  async function listen(userId) {
-    if (listeningTo === userId) {
-      const body = await fetch(`${SERVER_URL}/listen`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      if (!body.ok) {
-        throw new Error("Failed to stop listening");
-      }
-      setListeningTo(null);
+      setListeningTo(userId);
       setStatus("success");
-      setStatusMessage("Stopped listening");
-      return;
+      setStatusMessage("Started listening");
     }
-    const body = await fetch(`${SERVER_URL}/listen`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({ host_username: userId }),
-    });
-    
-    if (!body.ok) {
-      if (body.status === 404) {
-        setStatus("error");
-        setStatusMessage("Please open spotify");
-        throw new Error(await body.json().message);
-      } else {
-        setStatus("error");
-        setStatusMessage("Failed to listen");
-        throw new Error(await body.json().message);
-      }
-    }
-    setListeningTo(userId);
-    setStatus("success");
-    setStatusMessage("Started listening");
-  }
 
     return (
       <div
@@ -78,8 +78,8 @@ const UserListContainer = forwardRef(
            h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] 
            min-h-[800px] md:min-h-[900px]
            mx-auto rounded-xl shadow-xl"
-    >
- <div className="bg-orange-100/80 dark:bg-gray-800 backdrop-blur-sm rounded-xl h-full flex flex-col">
+      >
+        <div className="bg-orange-100/80 dark:bg-gray-800 backdrop-blur-sm rounded-xl h-full flex flex-col">
           {/* Header */}
 
           <div className="grid grid-cols-3 bg-white/80 dark:bg-gray-800/80 rounded-t-lg items-center p-6 border-b border-gray-200 dark:border-gray-700">
@@ -99,48 +99,48 @@ const UserListContainer = forwardRef(
             </h2>
 
             {status && (
-          <div
-            className={`text-center flex items-center justify-center ${
-              status === "success" ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {status === "success" ? (
-              <Check className="h-5 w-5" />
-            ) : (
-              <Ban className="h-5 w-5" />
-            )}
-            <span className="text-md ml-2">{statusMessage}</span>
-          </div>
-        )}
-        </div>
-
-        {/* Scrollable User List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white/80 dark:bg-gray-800/80 rounded-b-lg">
-          {isLoading ? (
-            [...Array(5)].map((_, i) => (
               <div
-                key={i}
-                className="w-full h-24 bg-gray-100/50 dark:bg-gray-700/50 rounded-xl p-4 flex items-center animate-pulse"
+                className={`text-center flex items-center justify-center ${
+                  status === "success" ? "text-green-600" : "text-red-600"
+                }`}
               >
-                <div className="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-600 mr-4" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/4" />
-                  <div className="h-3 bg-gray-200 dark:bg-gray-500 rounded w-1/3" />
-                </div>
+                {status === "success" ? (
+                  <Check className="h-5 w-5" />
+                ) : (
+                  <Ban className="h-5 w-5" />
+                )}
+                <span className="text-md ml-2">{statusMessage}</span>
               </div>
-            ))
-          ) : users?.length > 0 ? (
-            users.map((user) => (
-              <div
-                key={user.id}
-                className="w-full h-24 bg-gray-100/50 dark:bg-gray-700/50 rounded-xl p-4 flex items-center transition-all hover:scale-[1.01] group"
-              >
-                {/* Profile Image */}
-                <img
-                  src={user.images?.[1]?.url || '/default-avatar.png'}
-                  className="w-16 h-16 rounded-full object-cover mr-4"
-                  alt={user.display_name}
-                />
+            )}
+          </div>
+
+          {/* Scrollable User List */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white/80 dark:bg-gray-800/80 rounded-b-lg">
+            {isLoading ? (
+              [...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="w-full h-24 bg-gray-100/50 dark:bg-gray-700/50 rounded-xl p-4 flex items-center animate-pulse"
+                >
+                  <div className="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-600 mr-4" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/4" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-500 rounded w-1/3" />
+                  </div>
+                </div>
+              ))
+            ) : users?.length > 0 ? (
+              users.map((user) => (
+                <div
+                  key={user.id}
+                  className="w-full h-24 bg-gray-100/50 dark:bg-gray-700/50 rounded-xl p-4 flex items-center transition-all hover:scale-[1.01] group"
+                >
+                  {/* Profile Image */}
+                  <img
+                    src={user.images?.[1]?.url || "/default-avatar.png"}
+                    className="w-16 h-16 rounded-full object-cover mr-4"
+                    alt={user.display_name}
+                  />
 
                   {/* User Info */}
                   <div className="flex-1 min-w-0">
@@ -177,10 +177,14 @@ const UserListContainer = forwardRef(
                   >
                     Profile
                   </a>
-                <button 
-                onClick={() => listen(user.id)}
-                className="ml-4 px-3 py-1.5 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 transition-colors opacity-0 group-hover:opacity-100">
-                  {listeningTo === user.id ? "Stop Listening" : "Listen"} </button>
+                  <button
+                    onClick={() => listen(user.id)}
+                    className="ml-4 px-3 py-1.5 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    {listeningTo === user.id
+                      ? "Stop Listening"
+                      : "Listen Along"}{" "}
+                  </button>
                 </div>
               ))
             ) : (
