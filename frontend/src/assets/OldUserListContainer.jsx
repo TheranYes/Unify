@@ -1,6 +1,22 @@
 // components/OldUserListContainer.jsx
 import { forwardRef, useImperativeHandle, useState } from "react";
 
+// Helper function to calculate time difference
+const timeAgo = (timestamp) => {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - new Date(timestamp)) / 1000);
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} seconds`;
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} minutes`;
+  } else {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} hours`;
+  }
+};
+
 const OldUserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
   const [ users, setUsers ] = useState([]);
 
@@ -54,6 +70,11 @@ const OldUserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                     {user.display_name}
+                  </h3>
+                  <h3 className="text-gray-500">
+                    {
+                      user.lastNearby ? `Passed by ${timeAgo(user.lastNearby)} ago` : ''
+                    }
                   </h3>
                 </div>
 
