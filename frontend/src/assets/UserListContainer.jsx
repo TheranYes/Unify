@@ -79,10 +79,10 @@ const UserListContainer = forwardRef(
            min-h-[800px] md:min-h-[900px]
            mx-auto rounded-xl shadow-xl"
     >
- <div className="bg-orange-100/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl h-full flex flex-col">
+ <div className="bg-orange-100/80 dark:bg-gray-800 backdrop-blur-sm rounded-xl h-full flex flex-col">
           {/* Header */}
 
-          <div className="grid grid-cols-3 bg-white/80 dark:bg-gray-700/80 rounded-t-lg items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-3 bg-white/80 dark:bg-gray-800/80 rounded-t-lg items-center p-6 border-b border-gray-200 dark:border-gray-700">
             <motion.button
               onClick={onRefresh}
               whileHover={{ scale: 1.05 }}
@@ -115,7 +115,7 @@ const UserListContainer = forwardRef(
         </div>
 
         {/* Scrollable User List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white/80 dark:bg-gray-700/80 rounded-b-lg">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white/80 dark:bg-gray-800/80 rounded-b-lg">
           {isLoading ? (
             [...Array(5)].map((_, i) => (
               <div
