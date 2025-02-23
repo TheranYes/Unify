@@ -119,7 +119,7 @@ setInterval(async () => {
   } finally {
     isPinging = false;
   }
-}, 1000);
+}, 5000);
 
 function logger(req, res, next) {
   console.log(`Called: ${req.originalUrl}`);

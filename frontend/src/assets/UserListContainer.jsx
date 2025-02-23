@@ -65,7 +65,6 @@ const UserListContainer = forwardRef(
         setStatusMessage("Failed to listen");
         throw new Error(await body.json().message);
       }
-      return;
     }
     setListeningTo(userId);
     setStatus("success");
@@ -80,7 +79,7 @@ const UserListContainer = forwardRef(
            min-h-[800px] md:min-h-[900px]
            mx-auto rounded-xl shadow-xl"
     >
- <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl h-full flex flex-col">
+ <div className="bg-white-80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl h-full flex flex-col">
           {/* Header */}
 
           <div className="grid grid-cols-3 items-center p-6 border-b border-gray-200 dark:border-gray-700">
@@ -103,7 +102,7 @@ const UserListContainer = forwardRef(
           <div
             className={`text-center flex items-center justify-center ${
               status === "success" ? "text-green-600" : "text-red-600"
-            } mb-2`}
+            }`}
           >
             {status === "success" ? (
               <Check className="h-5 w-5" />
