@@ -5,6 +5,46 @@ const User = require('../models/user.js');
 const verifySpotifyTokenMiddleware = require('../middleware/verifySpotifyToken');
 const router = express.Router();
 
+async function activateDevice(user) {
+    const body = await fetch('https://api.spotify.com/v1/me/player/devices', {
+      method: 'GET',
+      headers: {
+          'Authorization': `Bearer ${user.spotify_token}`,
+      },
+    });
+  
+    if (!body.ok) {
+      throw new Error('Failed to get devices');
+    }
+    
+    let device_data = await body.json();
+    if (!device_data || device_data.devices.length === 0) {
+      throw new Error('No devices found');
+    }
+  
+    let device_id = device_data.devices[0].id;
+    for (let device of device_data.devices) {
+      if (device.is_active) {
+        return;
+      }
+    }
+  
+    const body_activate = await fetch(`https://api.spotify.com/v1/me/player`, {
+      method: 'PUT',
+      headers: {
+          'Authorization': `Bearer ${user.spotify_token}`,
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        device_ids: [device_id],
+        play: true,
+      })
+    });
+    if (!body_activate.ok) {
+      throw new Error('Failed to activate device');
+    }
+}
+
 router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
     const access_token = req.header('Authorization').replace('Bearer ', '');
     let userId;
@@ -35,6 +75,8 @@ router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
         if (session) {
             return res.status(400).send({ error: 'User is already hosting' });
         }
+
+        await activateDevice(user);
 
         const body = await fetch('https://api.spotify.com/v1/me/player', {
             method: 'GET',

@@ -30,7 +30,7 @@ router.get('/nearby', async (req, res) => {
             location: {
             $geoNear: {
                 $geometry: { type: "Point", coordinates: [long, lat] },
-                $maxDistance: milesToRadians(RADIUS_MILES) * 3963,
+                $maxDistance: milesToRadians(RADIUS_MILES),
                 $spherical: true
             }
             }

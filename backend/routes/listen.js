@@ -18,12 +18,12 @@ async function activateDevice(user) {
   }
   
   let device_data = await body.json();
-  if (device_data.devices.length === 0) {
+  if (!device_data || device_data.devices.length === 0) {
     throw new Error('No devices found');
   }
 
   let device_id = device_data.devices[0].id;
-  for (let device of device_data) {
+  for (let device of device_data.devices) {
     if (device.is_active) {
       return;
     }
@@ -61,27 +61,28 @@ router.post('/', verifySpotifyTokenMiddleware, async (req, res) => {
         return res.status(400).send({ error: 'User not found' });
     }
 
-    const { hostUsername } = req.body;
-    const session = await Session.findOne({ host: hostUsername });
+    const { host_username } = req.body;
+    const session = await Session.findOne({ host: host_username });
     if (!session) {
         return res.status(400).send({ error: 'Invalid host' });
     }
 
-    if (user.username === hostUsername) {
+    if (user.username === host_username) {
       return res.status(400).send({ error: 'Cannot listen to self' });
     }
 
-    if (user.listening_to === hostUsername) {
+    if (user.listening_to === host_username) {
       return res.status(400).send({ error: 'User is already listening' });
     }
 
-    session.listeners.push(user.username);
+    session.listening.push(user.username);
+    await session.save();
     if (user.listening_to !== null) {
       const session = await Session.findOne({ host: user.listening_to });
       session.listening = session.listening.filter(listener => listener !== user.username);
       await session.save();
     }
-    user.listening_to = hostUsername;
+    user.listening_to = host_username;
     await user.save();
 
     await activateDevice(user);
@@ -112,7 +113,7 @@ router.delete('/listen', verifySpotifyTokenMiddleware, async (req, res) => {
     }
 
     const session = await Session.findOne({ host: user.listening_to });
-    session.listeners = session.listeners.filter(listener => listener !== user.username);
+    session.listening = session.listening.filter(listener => listener !== user.username);
     user.listening_to = null;
     await session.save();
     await user.save();
