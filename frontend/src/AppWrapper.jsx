@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useLocation, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import LoginPage from "./pages/LoginPage";
@@ -8,37 +8,21 @@ import BroadcastPage from "./pages/BroadcastPage";
 
 export default function AppWrapper() {
   const location = useLocation();
-  const [displayLocation, setDisplayLocation] = useState(location);
-  const [transitionStage, setTransitionStage] = useState("in");
-
-  useEffect(() => {
-    console.log('Current location:', location.pathname);
-    console.log('Display location:', displayLocation.pathname);
-    if (location.pathname !== displayLocation.pathname) {
-      console.log('Transition triggered!');
-      setTransitionStage('out');
-    }
-  }, [location]);
 
   return (
-    <div className=" h-screen w-screen relative">
-      <div
-        className={`page ${transitionStage}`}
-        onAnimationEnd={() => {
-          if (transitionStage === "out") {
-            setTransitionStage("in");
-            setDisplayLocation(location);
-          }
-        }}
-      >
-        <Routes location={displayLocation}>
+    <div className="min-h-screen bg-orange-100 dark:bg-gray-800/80 transition-colors duration-300">
+      {/* Fixed background layer */}
+      <div className="fixed inset-0 bg-orange-100 dark:bg-slate-800 -z-10" />
+
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/callback" element={<RedirectPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/broadcast" element={<BroadcastPage />} />
         </Routes>
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
