@@ -1,10 +1,16 @@
 // components/UserListContainer.jsx
-import { forwardRef } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 
-const UserListContainer = forwardRef(({ users, isLoading }, ref) => {
+const UserListContainer = forwardRef(({ isLoading, scrollRef }, ref) => {
+  const [ users, setUsers ] = useState([]);
+
+  useImperativeHandle(ref, () => ({
+    setUsers,
+  }));
+
   return (
     <div
-      ref={ref}
+      ref={scrollRef}
       className="relative z-20 w-full md:w-3/4 
            h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] 
            min-h-[800px] md:min-h-[900px]

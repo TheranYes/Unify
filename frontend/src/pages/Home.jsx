@@ -6,6 +6,7 @@ import BroadcastContainer from "../assets/BroadcastContainer";
 
 export default function Home() {
   const userListRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const handleDiscoverClick = async () => {
     try {
@@ -40,13 +41,29 @@ export default function Home() {
 
       // Log success (you can add a toast notification here)
       console.log("Location updated successfully");
+
+      const userList = await fetch("http://localhost:3001/nearby", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!userList.ok) {
+        throw new Error("Failed to fetch nearby users");
+      }
+
+      const users = await userList.json();
+      // Set userListRef to the fetched users
+      userListRef.current?.setUsers(users);
+      
+      console.log("Fetched nearby users successfully. Count: ", users.length);
     } catch (error) {
       console.error("Error updating location:", error);
       // Handle errors (e.g., show error message to user)
     }
 
     // Scroll to user list regardless of location update success
-    userListRef.current?.scrollIntoView({
+    scrollRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
@@ -68,7 +85,7 @@ export default function Home() {
         <WelcomeContainer onDiscoverClick={handleDiscoverClick} />
         <BroadcastContainer />
       </div>
-      <UserListContainer ref={userListRef} />
+      <UserListContainer ref={userListRef} scrollRef={scrollRef} />
     </motion.main>
   );
 }
