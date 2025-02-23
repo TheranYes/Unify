@@ -8,23 +8,6 @@ body {
   overscroll-behavior-x: none;
 }
 
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOutLeft {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-100%);
-  }
-}
 
 .page {
   position: absolute; /* Required for overlapping */
@@ -43,3 +26,30 @@ body {
   animation: slideInRight 0.3s forwards;
   z-index: 1;
 }
+
+html,
+body,
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.fixed-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+/* Remove previous keyframes and add these */
+.animate-slide-in-right {
+  animation-fill-mode: forwards;
+}
+
+.animate-slide-out-left {
+  animation-fill-mode: forwards;
+}
+
