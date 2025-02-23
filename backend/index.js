@@ -11,6 +11,7 @@ const authRouter = require('./routes/auth.js');
 const listenRouter = require('./routes/listen.js');
 const profileRouter = require('./routes/profile.js');
 const locationRouter = require('./routes/location.js');
+const nearbyRouter = require('./routes/nearby.js');
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
@@ -25,6 +26,7 @@ app.use('/host', sessionRouter);
 app.use('/listen', listenRouter);
 app.use('/profile', profileRouter);
 app.use('/location', locationRouter);
+app.use('/nearby', nearbyRouter);
 
 const dbUser = process.env.MONGODB_USER;
 const dbPassword = process.env.MONGODB_PASSWORD;
@@ -112,7 +114,7 @@ setInterval(async () => {
 }, 1000);
 
 function logger(req, res, next) {
-  console.log(`Called: ${req.orginalUrl}`);
+  console.log(`Called: ${req.originalUrl}`);
   next();
 }
 

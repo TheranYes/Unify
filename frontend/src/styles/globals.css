@@ -1,55 +1,14 @@
-/* Prevent horizontal scrollbars */
 html {
   overflow-x: hidden;
 }
 
-/* Disable overscroll glow/bounce effect */
 body {
   overscroll-behavior-x: none;
+  background: linear-gradient(
+    to bottom right,
+    var(--cream),
+    var(--cream-variant)
+  );
+  background-attachment: fixed;
 }
-
-
-.page {
-  position: absolute; /* Required for overlapping */
-  width: 100vw; /* Full viewport width */
-  height: 100vh; /* Full viewport height */
-  top: 0;
-  left: 0;
-}
-
-.page.out {
-  animation: slideOutLeft 0.3s forwards;
-  z-index: 2; /* Ensure outgoing page stays on top */
-}
-
-.page.in {
-  animation: slideInRight 0.3s forwards;
-  z-index: 1;
-}
-
-html,
-body,
-#root {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.fixed-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-}
-
-/* Remove previous keyframes and add these */
-.animate-slide-in-right {
-  animation-fill-mode: forwards;
-}
-
-.animate-slide-out-left {
-  animation-fill-mode: forwards;
-}
-
+  
