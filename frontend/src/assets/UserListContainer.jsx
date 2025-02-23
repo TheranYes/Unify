@@ -1,7 +1,7 @@
 import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
-import { Check, Ban } from "lucide-react";
 import { motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
+import { Check, Ban } from "lucide-react";
 
 const UserListContainer = forwardRef(
   ({ isLoading, scrollRef, onRefresh }, ref) => {
@@ -80,11 +80,40 @@ const UserListContainer = forwardRef(
            min-h-[800px] md:min-h-[900px]
            mx-auto rounded-xl shadow-xl"
     >
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl h-full flex flex-col">
-        {/* Header */}
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white p-6 text-center border-b border-gray-200 dark:border-gray-700">
-          Near You
-        </h2>
+ <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl h-full flex flex-col">
+          {/* Header */}
+
+          <div className="grid grid-cols-3 items-center p-6 border-b border-gray-200 dark:border-gray-700">
+            <motion.button
+              onClick={onRefresh}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-4 py-2 bg-orange-700 text-white rounded-full 
+               hover:bg-orange-600 transition-all duration-200
+               text-sm font-semibold shadow-md flex items-center gap-2 max-w-30"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Refresh</span>
+            </motion.button>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+              Near You
+            </h2>
+
+            {status && (
+          <div
+            className={`text-center flex items-center justify-center ${
+              status === "success" ? "text-green-600" : "text-red-600"
+            } mb-2`}
+          >
+            {status === "success" ? (
+              <Check className="h-5 w-5" />
+            ) : (
+              <Ban className="h-5 w-5" />
+            )}
+            <span className="text-md ml-2">{statusMessage}</span>
+          </div>
+        )}
+        </div>
 
         {/* Scrollable User List */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -137,26 +166,31 @@ const UserListContainer = forwardRef(
                     )}
                   </div>
 
-                {/* Spotify Link */}
-                <a
-                  href={user.external_urls.spotify}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-4 px-3 py-1.5 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  Profile
-                </a>
+                  {/* Spotify Link */}
+                  <a
+                    href={user.external_urls.spotify}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-4 px-3 py-1.5 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    Profile
+                  </a>
+                <button 
+                onClick={() => listen(user.id)}
+                className="ml-4 px-3 py-1.5 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 transition-colors opacity-0 group-hover:opacity-100">
+                  {listeningTo === user.id ? "Stop Listening" : "Listen"} </button>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                No nearby users found
               </div>
-            ))
-          ) : (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              No nearby users found
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 export default UserListContainer;
