@@ -1,14 +1,31 @@
 // src/pages/BroadcastPage.jsx
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Ban, Loader2 } from "lucide-react";
 
 export default function BroadcastPage() {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [status, setStatus] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
-  const [spotifyWindow, setSpotifyWindow] = useState(null);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const body = await fetch("http://localhost:3001/host", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await body.json();
+      if (body.ok && data.isBroadcasting) {
+        setIsBroadcasting(true);
+      } else {
+        setIsBroadcasting(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   const DEVICE_REGISTRATION_DELAY = 5000; // 5 seconds
 
   const handleBroadcastAction = async () => {
@@ -33,70 +50,58 @@ export default function BroadcastPage() {
     setStatusMessage("Opening Spotify and registering device...");
 
     try {
-      // Open Spotify in new tab
-      const newWindow = window.open("https://open.spotify.com", "_blank");
-      setSpotifyWindow(newWindow);
+      let position;
+      try {
+        position = await new Promise((posResolve, posReject) => {
+          navigator.geolocation.getCurrentPosition(posResolve, posReject, {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+          });
+        });
+      } catch (error) {
+        throw new Error("Failed to geolocate. Please check your settings.");
+      }
 
-      // Wait for device registration
-      await new Promise(async (resolve, reject) => {
-        setTimeout(async () => {
-          try {
-            if (newWindow.closed) {
-              throw new Error(
-                "Spotify window closed before registration completed"
-              );
-            }
+      // Update location
+      setStatusMessage("Updating your location...");
+      const token = localStorage.getItem("token");
+      const locationResponse = await fetch(
+        "http://localhost:3001/location/update",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          }),
+        }
+      );
 
-            // Get user's location
-            const position = await new Promise((posResolve, posReject) => {
-              navigator.geolocation.getCurrentPosition(posResolve, posReject, {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0,
-              });
-            });
+      if (!locationResponse.ok)
+        throw new Error("Failed to update broadcast location");
 
-            // Update location
-            setStatusMessage("Updating your location...");
-            const token = localStorage.getItem("token");
-            const locationResponse = await fetch(
-              "http://localhost:3001/location/update",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
-                }),
-              }
-            );
-
-            if (!locationResponse.ok)
-              throw new Error("Failed to update broadcast location");
-
-            // Start broadcast
-            setStatusMessage("Finalizing broadcast setup...");
-            const hostResponse = await fetch("http://localhost:3001/host", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            if (!hostResponse.ok) throw new Error("Failed to start broadcast");
-
-            setIsBroadcasting(true);
-            setStatus("success");
-            setStatusMessage("Broadcast started successfully");
-            resolve();
-          } catch (error) {
-            reject(error);
-          }
-        }, DEVICE_REGISTRATION_DELAY);
+      // Start broadcast
+      setStatusMessage("Setting up broadcast...");
+      const hostResponse = await fetch("http://localhost:3001/host", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
+      if (hostResponse.status == 404) {
+        throw new Error("Please begin listening to a song on Spotify");
+      } else if (!hostResponse.ok) {
+        throw new Error("Failed to start broadcast");
+      }
+
+      setIsBroadcasting(true);
+      setStatus("success");
+      setStatusMessage("Broadcast started successfully");
     } catch (error) {
       setStatus("error");
       setStatusMessage(error.message);
