@@ -2,7 +2,7 @@ const express = require('express');
 const verifyUserToken = require('../middleware/verifyUserToken');
 const Session = require('../models/session');
 const User = require('../models/user');
-const { getSpotifyProfile } = require('./spotify');
+const { getSpotifyProfile, getCurrentTrack } = require('./spotify');
 
 const router = express.Router();
 
@@ -49,6 +49,9 @@ router.get('/', verifyUserToken, async (req, res) => {
 
         if (distance <= RADIUS_MILES) {
           const spotifyProfile = await getSpotifyProfile(user.spotify_token, session.host);
+          const curSong = await getCurrentTrack(hostUser.spotify_token);
+          spotifyProfile.currentSong = curSong.name;
+          spotifyProfile.currentSongImg = curSong.images;
           hosts.push(spotifyProfile);
         }
       }

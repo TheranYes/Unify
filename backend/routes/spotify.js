@@ -64,4 +64,25 @@ async function getSpotifyProfile(token, userId) {
   }
 }
 
-module.exports = { verifySpotifyToken, refreshSpotifyToken, getSpotifyUserId, getSpotifyProfile };
+async function getCurrentTrack(token) {
+  try {
+    const response = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.data.item) {
+      return { images: [], name: 'No track playing' };
+    }
+
+    const images = response.data.item.album.images;
+    const name = response.data.item.name;
+
+    return { images, name };
+  } catch (error) {
+    throw new Error('Failed to get current track');
+  }
+}
+
+module.exports = { verifySpotifyToken, refreshSpotifyToken, getSpotifyUserId, getSpotifyProfile, getCurrentTrack };
