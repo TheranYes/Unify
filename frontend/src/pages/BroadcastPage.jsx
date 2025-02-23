@@ -1,9 +1,11 @@
 // src/pages/BroadcastPage.jsx
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { Check, Ban, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Ban, Loader2, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function BroadcastPage() {
+  const navigate = useNavigate();
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [status, setStatus] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
@@ -26,7 +28,12 @@ export default function BroadcastPage() {
 
     fetchData();
   }, []);
-  const DEVICE_REGISTRATION_DELAY = 5000; // 5 seconds
+  const DEVICE_REGISTRATION_DELAY = 5000;
+
+  // Back button handler
+  const handleGoBack = () => {
+    navigate(-1); // Go back to previous page
+  };
 
   const handleBroadcastAction = async () => {
     if (isBroadcasting) {
@@ -118,6 +125,19 @@ export default function BroadcastPage() {
       transition={{ duration: 0.3 }}
       className="min-h-screen"
     >
+      {/* Back Button */}
+      <motion.button
+        onClick={handleGoBack}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="absolute top-4 left-4 z-20 px-4 py-2 bg-orange-700 text-white rounded-full 
+          hover:bg-orange-600 transition-all duration-200 text-sm font-semibold 
+          shadow-md flex items-center space-x-2"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Back</span>
+      </motion.button>
+
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-orange-100 to-white dark:from-slate-800 dark:to-gray-700">
         <motion.div
           initial={{ scale: 0.95 }}

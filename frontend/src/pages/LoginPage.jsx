@@ -48,7 +48,7 @@ export default function LoginPage() {
           {/* Icon + Header Container */}
           <div className="flex items-center gap-4">
             {/* Icon */}
-            <AudioLines className="w-12 h-12 bg-cream">
+            <AudioLines className=" stroke-orange-700 w-12 h-12 ">
               {/* Your Spotify icon SVG here */}
             </AudioLines>
 
